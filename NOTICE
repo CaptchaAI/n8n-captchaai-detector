@@ -1,0 +1,17 @@
+n8n-nodes-captchaai-detect
+Copyright 2026 CaptchaAI
+
+This product includes software originally developed by CaptchaAI
+(https://captchaai.com/), ported from the CaptchaAI browser extension's
+CAPTCHA-detection logic into an n8n community node.
+
+Licensed under the Apache License, Version 2.0, together with the
+Additional Terms in LICENSE.md Part 2 (attribution, a 30-day cure period on
+attribution defects, a trademark/logo carve-out, and a modification-
+disclosure requirement for forks). See LICENSE.md for the complete terms.
+
+Any redistribution of this software, modified or unmodified, must reproduce
+this NOTICE file per LICENSE.md §2.1.
+
+This project bundles Playwright (https://playwright.dev/) as a runtime
+dependency, licensed separately under the Apache License, Version 2.0.

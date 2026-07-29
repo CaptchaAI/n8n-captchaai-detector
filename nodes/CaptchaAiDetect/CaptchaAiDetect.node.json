@@ -1,0 +1,13 @@
+{
+	"node": "n8n-nodes-captchaai-detect.captchaAiDetect",
+	"nodeVersion": "1.0",
+	"codexVersion": "1.0",
+	"categories": ["Development", "Utility"],
+	"resources": {
+		"primaryDocumentation": [
+			{
+				"url": "https://github.com/CaptchaAI/n8n-nodes-captchaai-detect#readme"
+			}
+		]
+	}
+}

@@ -1,0 +1,19 @@
+node_modules
+dist
+.tmp
+tmp
+coverage
+*.tgz
+.DS_Store
+.env
+.env.*
+npm-debug.log*
+yarn-error.log*
+.vscode
+.idea
+test-results
+tests/live/__artifacts__
+
+# Local Playwright/debug scripts (repo root)
+/debug-*.ts
+/debug-screenshot*.png

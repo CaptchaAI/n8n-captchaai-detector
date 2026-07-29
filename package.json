@@ -1,0 +1,88 @@
+{
+	"name": "n8n-nodes-captchaai-detect",
+	"version": "0.1.0",
+	"description": "CaptchaAI Detect community node for n8n - finds CAPTCHA widgets (reCAPTCHA, Turnstile, GeeTest, and more) on a page across every frame and returns their identifying parameters. Detection only - never solves, never injects tokens.",
+	"keywords": [
+		"n8n-community-node-package",
+		"n8n",
+		"captcha",
+		"captchaai",
+		"captcha detector",
+		"recaptcha",
+		"turnstile",
+		"cloudflare",
+		"geetest",
+		"captchafox",
+		"friendly captcha",
+		"lemin",
+		"automation",
+		"playwright"
+	],
+	"license": "Apache-2.0",
+	"homepage": "https://captchaai.com/",
+	"author": {
+		"name": "captchaai-developers",
+		"email": "dev@captchaai.com"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CaptchaAI/n8n-nodes-captchaai-detect.git"
+	},
+	"bugs": {
+		"url": "https://github.com/CaptchaAI/n8n-nodes-captchaai-detect/issues"
+	},
+	"engines": {
+		"node": ">=20"
+	},
+	"main": "dist/nodes/CaptchaAiDetect/CaptchaAiDetect.node.js",
+	"scripts": {
+		"build": "tsup && gulp build:icons",
+		"dev": "tsup --watch",
+		"typecheck": "tsc --noEmit",
+		"test": "vitest run --config tests/vitest.config.ts",
+		"test:live": "cross-env LIVE=1 vitest run --config tests/vitest.config.ts",
+		"test:watch": "vitest --config tests/vitest.config.ts",
+		"format": "prettier nodes tests --write",
+		"lint": "eslint nodes package.json",
+		"lintfix": "eslint nodes package.json --fix",
+		"scan": "npm run build && node scripts/scan-local.mjs",
+		"scan:published": "npx @n8n/scan-community-package n8n-nodes-captchaai-detect",
+		"prepublishOnly": "npm run build && npm test && eslint -c .eslintrc.prepublish.js nodes package.json",
+		"postinstall": "node ./scripts/postinstall-playwright.js"
+	},
+	"files": [
+		"dist",
+		"scripts",
+		"README.md",
+		"CHANGELOG.md",
+		"LICENSE.md",
+		"NOTICE"
+	],
+	"n8n": {
+		"n8nNodesApiVersion": 1,
+		"nodes": [
+			"dist/nodes/CaptchaAiDetect/CaptchaAiDetect.node.js"
+		]
+	},
+	"dependencies": {
+		"playwright": "^1.48.0"
+	},
+	"devDependencies": {
+		"@n8n/scan-community-package": "^0.29.1",
+		"@types/node": "^22.10.0",
+		"@typescript-eslint/parser": "~8.32.0",
+		"cross-env": "^7.0.3",
+		"esbuild": "^0.24.0",
+		"eslint": "^8.57.0",
+		"eslint-plugin-n8n-nodes-base": "^1.16.3",
+		"gulp": "^5.0.0",
+		"n8n-workflow": "*",
+		"prettier": "^3.5.3",
+		"tsup": "^8.3.5",
+		"typescript": "^5.8.2",
+		"vitest": "^3.2.0"
+	},
+	"peerDependencies": {
+		"n8n-workflow": "*"
+	}
+}

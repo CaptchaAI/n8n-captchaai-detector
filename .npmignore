@@ -1,0 +1,16 @@
+.github
+nodes
+tests
+examples
+node_modules
+*.ts
+!dist/**/*.d.ts
+tsconfig.json
+tsup.config.ts
+gulpfile.js
+.eslintrc.js
+.prettierrc.js
+.editorconfig
+.gitignore
+*.tgz
+coverage

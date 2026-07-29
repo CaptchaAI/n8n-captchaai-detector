@@ -1,0 +1,92 @@
+{
+	"name": "CaptchaAI Detect - example",
+	"nodes": [
+		{
+			"parameters": {},
+			"id": "b4b6a6b1-2a3e-4a3b-8f7b-1a2b3c4d5e6f",
+			"name": "When clicking \"Execute Workflow\"",
+			"type": "n8n-nodes-base.manualTrigger",
+			"typeVersion": 1,
+			"position": [
+				240,
+				300
+			]
+		},
+		{
+			"parameters": {
+				"url": "https://www.google.com/recaptcha/api2/demo",
+				"captchaTypes": [
+					"recaptcha_v2",
+					"recaptcha_v2_invisible",
+					"recaptcha_v2_enterprise",
+					"recaptcha_v3",
+					"recaptcha_v3_enterprise",
+					"turnstile",
+					"geetest_v3",
+					"grid_image",
+					"bls",
+					"normal_image",
+					"friendly_captcha",
+					"captchafox",
+					"lemin"
+				],
+				"timeout": 30000
+			},
+			"id": "c5c7b7c2-3b4f-5b4c-9a8c-2b3c4d5e6f7a",
+			"name": "CaptchaAI Detect",
+			"type": "n8n-nodes-captchaai-detect.captchaAiDetect",
+			"typeVersion": 1,
+			"position": [
+				460,
+				300
+			]
+		},
+		{
+			"parameters": {
+				"mode": "manual",
+				"duplicateItem": false,
+				"assignments": {
+					"assignments": []
+				},
+				"includeOtherFields": true,
+				"options": {}
+			},
+			"id": "d6d8c8d3-4c5f-6c5d-8b9d-3c4d5e6f7a8b",
+			"name": "Inspect results",
+			"type": "n8n-nodes-base.set",
+			"typeVersion": 3.4,
+			"position": [
+				680,
+				300
+			]
+		}
+	],
+	"connections": {
+		"When clicking \"Execute Workflow\"": {
+			"main": [
+				[
+					{
+						"node": "CaptchaAI Detect",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"CaptchaAI Detect": {
+			"main": [
+				[
+					{
+						"node": "Inspect results",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		}
+	},
+	"pinData": {},
+	"meta": {
+		"instanceId": "example"
+	}
+}
