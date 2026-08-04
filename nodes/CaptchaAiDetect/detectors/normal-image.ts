@@ -5,7 +5,17 @@ import { isVisible } from '../dom/visibility';
 import type { CaptchaTypeName, RawDetection } from '../libs/types';
 
 interface RawNormalImageHit {
-	imageBase64: string;
+	/** Resolved image URL (http(s):// or data:), used to recover the original file bytes. */
+	imageSrc: string;
+	/**
+	 * Canvas-rendered PNG, used only when the original bytes cannot be
+	 * fetched (e.g. blob: sources). `null` when the canvas render itself
+	 * failed - notably a cross-origin image served without CORS headers
+	 * taints the canvas and makes `toDataURL()` throw, which must not drop
+	 * the candidate entirely since the Node-side network fetch can still
+	 * recover the real bytes for exactly that case.
+	 */
+	fallbackBase64: string | null;
 }
 
 /**
@@ -43,6 +53,32 @@ function detectNormalImageInPage(args: {
 
 	const DECORATIVE_IMAGE_HINT_RE = /\b(?:logo|icon|badge|avatar|wordmark|brand|thumbnail|illustration)\b/i;
 	const CHALLENGE_IMAGE_HINT_RE = /captcha|verification|verify|security|challenge/i;
+
+	// Known third-party widget response fields whose `name`/`id` happen to
+	// contain the substring "captcha" (e.g. "g-recaptcha-response" contains
+	// "captcha") but are never an OCR-style answer field - matching them here
+	// causes normal_image to misfire on pages that embed reCAPTCHA/Turnstile/
+	// hCaptcha/CaptchaFox and separately have any image whose alt/src also
+	// happens to mention "captcha" (very common on CAPTCHA demo/marketing
+	// pages), since the widget's hidden response field then gets treated as
+	// the "answer box" and an unrelated nearby image gets misreported as the
+	// thing to solve.
+	const KNOWN_CAPTCHA_RESPONSE_FIELD_NAMES = [
+		'g-recaptcha-response',
+		'h-captcha-response',
+		'cf-turnstile-response',
+		'cf-captcha-response',
+		'cf_captcha_response',
+		'captchafox-response',
+	];
+
+	function isKnownCaptchaResponseField(el: Element): boolean {
+		const name = (el.getAttribute('name') || '').toLowerCase();
+		const id = (el.getAttribute('id') || '').toLowerCase();
+		return KNOWN_CAPTCHA_RESPONSE_FIELD_NAMES.some(
+			(known) => name === known || id === known || id.startsWith(`${known}-`),
+		);
+	}
 
 	function getCandidateText(meta: {
 		src?: string | null;
@@ -123,6 +159,7 @@ function detectNormalImageInPage(args: {
 	}
 
 	function isEligibleOcrInput(element: OcrInputElement): boolean {
+		if (isKnownCaptchaResponseField(element)) return false;
 		if (element instanceof HTMLInputElement) {
 			if (['hidden', 'password', 'email', 'search', 'tel', 'number'].includes(element.type)) return false;
 		}
@@ -259,11 +296,16 @@ function detectNormalImageInPage(args: {
 		const key = img.currentSrc || img.src;
 		if (!key || claimedImageKeys.has(key)) return;
 		claimedImageKeys.add(key);
+		let fallbackBase64: string | null = null;
 		try {
-			results.push({ imageBase64: imageElementToPngBase64(img) });
+			fallbackBase64 = imageElementToPngBase64(img);
 		} catch {
-			// Not decodable this pass - skip.
+			// Canvas render failed (commonly: tainted by a cross-origin image
+			// with no CORS headers) - keep the candidate anyway, the Node-side
+			// network fetch in detectNormalImage() can still recover the real
+			// bytes directly.
 		}
+		results.push({ imageSrc: key, fallbackBase64 });
 	}
 
 	// --- Method 2: explicit imageSelector / inputSelector params ---
@@ -359,6 +401,7 @@ function detectNormalImageInPage(args: {
 		}
 		inputs.forEach((inputCandidate) => {
 			if (!isOcrInputElement(inputCandidate)) return;
+			if (isKnownCaptchaResponseField(inputCandidate)) return;
 			const img = findNearbyCaptchaImage(inputCandidate);
 			if (!img || !img.src || img.naturalWidth < 20 || img.naturalHeight < 10) return;
 			addCandidate(img, inputCandidate);
@@ -376,6 +419,36 @@ function detectNormalImageInPage(args: {
 	return results;
 }
 
+/**
+ * Recovers the original file bytes for an image source as base64, so the
+ * result is a base64 encoding of the real file (JPEG stays JPEG, GIF stays
+ * GIF, …) rather than a canvas-rendered PNG re-encode. `data:` sources
+ * already carry their original bytes inline; http(s) sources are fetched
+ * with Playwright's request API, which - unlike an in-page `fetch()` - is
+ * not subject to the page's CORS policy, since it is not routed through the
+ * page's own security context.
+ */
+async function resolveOriginalImageBase64(frame: Frame, imageSrc: string): Promise<string | null> {
+	if (imageSrc.startsWith('data:')) {
+		const comma = imageSrc.indexOf(',');
+		if (comma === -1) return null;
+		const meta = imageSrc.slice(5, comma);
+		if (!meta.includes(';base64')) return null;
+		return imageSrc.slice(comma + 1);
+	}
+
+	if (!/^https?:\/\//i.test(imageSrc)) return null;
+
+	try {
+		const response = await frame.page().context().request.get(imageSrc);
+		if (!response.ok()) return null;
+		const body = await response.body();
+		return body.toString('base64');
+	} catch {
+		return null;
+	}
+}
+
 export async function detectNormalImage(
 	frame: Frame,
 	enabledTypes: Set<CaptchaTypeName>,
@@ -389,13 +462,17 @@ export async function detectNormalImage(
 	});
 	const hits = (await frame.evaluate(script)) as RawNormalImageHit[];
 
-	return hits.map((hit) => ({
+	const resolved = await Promise.all(
+		hits.map(async (hit) => (await resolveOriginalImageBase64(frame, hit.imageSrc)) ?? hit.fallbackBase64),
+	);
+
+	return resolved.filter((imageBase64): imageBase64 is string => imageBase64 !== null).map((imageBase64) => ({
 		type: 'normal_image' as const,
 		source: 'dom' as const,
-		imageBase64: hit.imageBase64,
+		imageBase64,
 		solveParams: {
 			method: 'base64',
-			body: hit.imageBase64,
+			body: imageBase64,
 		},
 	}));
 }
