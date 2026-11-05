@@ -134,7 +134,7 @@ found in (these differ for widgets nested inside an iframe). Image-based types
 (Normal Image, Grid Image) additionally carry `imageBase64` at the top level for convenience.
 **BLS** returns **one item** with **`imagesBase64`** (nine raw base64 strings, empty string
 for missing cells) and matching **`blsImage1`…`blsImage9`** fields for the
-[CaptchaAI](https://github.com/CaptchaAI/n8n-captchaai) solve node. Wire the solve node with
+[CaptchaAI](https://github.com/CaptchaAI/n8n-nodes-captchaai) solve node. Wire the solve node with
 CAPTCHA Type **BLS** and expressions such as `{{ $json.blsImage1 }}` … `{{ $json.blsImage9 }}`,
 `{{ $json.instructions }}`. `solveParams` still uses full JPEG data URIs as
 `image_base64_1`…`image_base64_9` for direct API use.

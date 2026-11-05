@@ -1,20 +1,26 @@
 {
 	"name": "n8n-nodes-captchaai-detect",
-	"version": "1.0.1",
+	"version": "1.0.2",
 	"description": "CaptchaAI Detect community node for n8n - finds CAPTCHA widgets (reCAPTCHA, Turnstile, GeeTest, and more) on a page across every frame and returns their identifying parameters. Detection only - never solves, never injects tokens.",
 	"keywords": [
 		"n8n-community-node-package",
 		"n8n",
+		"n8n-workflow",
 		"captcha",
 		"captchaai",
 		"captcha detector",
+		"captcha-detection",
+		"sitekey",
 		"recaptcha",
+		"cloudflare-turnstile",
 		"turnstile",
 		"cloudflare",
 		"geetest",
 		"captchafox",
 		"friendly captcha",
 		"lemin",
+		"web-scraping",
+		"browser-automation",
 		"automation",
 		"playwright"
 	],
@@ -29,7 +35,7 @@
 		"url": "git+https://github.com/CaptchaAI/n8n-captchaai-detector.git"
 	},
 	"bugs": {
-		"url": "https://github.com/CaptchaAI/n8n-nodes-captchaai-detect/issues"
+		"url": "https://github.com/CaptchaAI/n8n-captchaai-detector/issues"
 	},
 	"engines": {
 		"node": ">=20"
